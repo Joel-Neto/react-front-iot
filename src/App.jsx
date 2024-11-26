@@ -17,12 +17,9 @@ const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function App() {
   const [page, setPage] = useState(1);
+  const [monthData, setMonthData] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const rowsPerPage = 15;
-
-  useEffect(() => {
-    console.log({ selectedMonth });
-  }, [selectedMonth]);
 
   const { data, error, isLoading } = useSWR(
     `https://express-api-iot.vercel.app/temp?limit=${rowsPerPage}&skip=${
@@ -32,10 +29,38 @@ export default function App() {
     { keepPreviousData: true }
   );
 
-  const totalItems = data?.data?.count ?? 0; // total de itens na resposta
+  useEffect(() => {
+    try {
+      const fetchData = async () => {
+        const response = await fetch(
+          `https://express-api-iot.vercel.app/temp/dates?month=${
+            selectedMonth + 1
+          }&year=2024`
+        );
+        const data = await response.json();
+        setMonthData(data.data.temps);
+      };
+
+      fetchData();
+    } catch (error) {
+      console.error(error.message);
+    }
+  }, [selectedMonth]);
+
+  const totalItems = data?.data?.count ?? 0;
   const pages = totalItems > 0 ? Math.ceil(totalItems / rowsPerPage) : 0;
 
-  if (error) return <div>Error loading data</div>;
+  if (error) {
+    return (
+      <div className="bg-zinc-800 min-h-screen flex justify-center items-center">
+        <p className="flex items-center gap-2">
+          <span className="text-zinc-200 text-xl font-bold">
+            Erro ao carregar dados...
+          </span>
+        </p>
+      </div>
+    );
+  }
 
   const loadingState =
     isLoading || data?.data?.length === 0 ? "loading" : "idle";
@@ -80,11 +105,8 @@ export default function App() {
             ))}
           </select>
         </div>
-        <HumidityChart data={data.data.temps} selectedMonth={selectedMonth} />
-        <TemperatureChart
-          data={data.data.temps}
-          selectedMonth={selectedMonth}
-        />
+        <HumidityChart data={monthData} selectedMonth={selectedMonth} />
+        <TemperatureChart data={monthData} selectedMonth={selectedMonth} />
       </section>
 
       <section className="container mx-auto max-w-5xl pt-20 px-5">
@@ -105,7 +127,6 @@ export default function App() {
               </TableColumn>
               <TableColumn className="bg-zinc-500 text-white">Data</TableColumn>
             </TableHeader>
-            {/* <TableBody items={data.data ?? []}> */}
             <TableBody
               items={data?.data.temps ?? []}
               loadingContent={<Spinner />}
