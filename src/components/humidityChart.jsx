@@ -49,14 +49,14 @@ const HumidityChart = ({ data, selectedMonth }) => {
     labels: labels,
     datasets: [
       {
-        label: "Umidade Interna",
+        label: "Umidade Interna (%)",
         data: internalHumidity,
         backgroundColor: "rgba(54, 162, 235, 0.8)",
         borderColor: "rgba(54, 162, 235, 1)",
         borderWidth: 1,
       },
       {
-        label: "Umidade Externa",
+        label: "Umidade Externa (%)",
         data: externalHumidity,
         backgroundColor: "rgba(75, 192, 192, 0.8)",
         borderColor: "rgba(75, 192, 192, 1)",
